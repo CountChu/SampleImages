@@ -1,9 +1,9 @@
 #
 # FILENAME.
-#       Sampling.py - Sampling Python Application.
+#       SampleImages.py - Sample Images Python Application.
 #
 # FUNCTIONAL DESCRIPTION.
-#       The app samples from dataset by a given rate.
+#       The app samples images from dataset by a given rate.
 #
 # NOTICE.
 #       Author: visualge@gmail.com (CountChu)
