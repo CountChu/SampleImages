@@ -3,7 +3,7 @@
 #       Util.py - Utility Module.
 #
 # FUNCTIONAL DESCRIPTION.
-#       The module provide app with API. 
+#       The module provide app with API.
 #
 # NOTICE.
 #       Author: visualge@gmail.com (CountChu)
@@ -17,6 +17,7 @@
 import os
 import shutil
 import pdb
+import logging
 
 #
 # Include specific packages.
@@ -25,7 +26,7 @@ import pdb
 #
 # It gets dict from baseNameList so that th key is the first part of the base name.
 #
-   
+
 def getBaseNameDict(baseNameList):
     baseNameDict = {}
     for bn in baseNameList:
@@ -33,10 +34,8 @@ def getBaseNameDict(baseNameList):
         id = int(id)
         baseNameDict[id] = bn
     return baseNameDict
-    
-def samplingKeys(keyList, rate):
-    keyList.sort()
-    total = len(keyList)
+
+def getIdxList(total, rate):
     print('total = %d' % total)
     print('rate = %d' % rate)
 
@@ -44,32 +43,63 @@ def samplingKeys(keyList, rate):
     interval = int(total / sampleCount)
     print('interval = %d' % interval)
     print('sampleCount = %d' % sampleCount)
-    
+
     idxList = []
     for i in range(sampleCount + 1):
         idx = int(interval * i)
         if idx >= total:
             break
         idxList.append(idx)
-    #pdb.set_trace()    
-    print('len(idxList) = %d' % len(idxList))
-    
-    newKeyList = []
-    for idx in idxList:
-        key = keyList[idx]
-        newKeyList.append(key)
-    
-    return newKeyList
-    
-def copyFiles(keyList, baseNameDict, dir, outputDir, check):
+    #pdb.set_trace()
+    logging.info('len(idxList) = %d' % len(idxList))
+    logging.info('idxList[:10] = %s' % idxList[:10])
+    return idxList, interval
 
+def getPartitionList(idxList, interval, total):
+    partList = []
+    for i in range(interval):
+        part = []
+        for idx in idxList:
+            if (idx + i) >= total:
+                break
+            part.append(idx + i)
+        partList.append(part)
+    logging.info('partList[0][:10] = %s' % partList[0][:10])
+    logging.info('partList[1][:10] = %s' % partList[1][:10])
+
+    #
+    # Check partList.
+    #
+
+    count = 0
+    for part in partList:
+        count += len(part)
+    if count != total:
+        print('Error. count = %d, total = %d' % (count, total))
+        sys.exit(0)
+    #pdb.set_trace()
+
+    return partList
+
+def samplingKeys(idList, idxList):
+
+    idPartList = []
+    for idx in idxList:
+        id = idList[idx]
+        idPartList.append(id)
+
+    return idPartList
+
+def copyFiles(keyList, baseNameDict, dir, outputDir, pid, check):
+
+    outputDir = '%s-p%02d' % (outputDir, pid)
     if not os.path.exists(outputDir):
         if check:
             print('Will create the directory.')
         else:
             print('Create the directory.')
         print(outputDir)
-        
+
         if not check:
             os.mkdir(outputDir)
 
@@ -79,7 +109,7 @@ def copyFiles(keyList, baseNameDict, dir, outputDir, check):
         print(dir)
         print('to')
         print(outputDir)
-        
+
     if not check:
         for key in keyList:
             bn = baseNameDict[key]
@@ -87,4 +117,3 @@ def copyFiles(keyList, baseNameDict, dir, outputDir, check):
             toFn = os.path.join(outputDir, bn)
             print('Copy %s %s' % (fromFn, toFn))
             shutil.copyfile(fromFn, toFn)
-    
