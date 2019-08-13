@@ -90,9 +90,8 @@ def samplingKeys(idList, idxList):
 
     return idPartList
 
-def copyFiles(keyList, baseNameDict, dir, outputDir, pid, check):
+def copyFiles(keyList, baseNameDict, dir, outputDir, check):
 
-    outputDir = '%s-p%02d' % (outputDir, pid)
     if not os.path.exists(outputDir):
         if check:
             print('Will create the directory.')
@@ -104,16 +103,14 @@ def copyFiles(keyList, baseNameDict, dir, outputDir, pid, check):
             os.mkdir(outputDir)
 
     if check:
-        print('')
-        print('Will copy files from')
-        print(dir)
-        print('to')
-        print(outputDir)
+        #print('')
+        print('Will copy files from: %s' % dir)
+        print('                  to: %s' % outputDir)
 
     if not check:
         for key in keyList:
             bn = baseNameDict[key]
             fromFn = os.path.join(dir, bn)
             toFn = os.path.join(outputDir, bn)
-            print('Copy %s %s' % (fromFn, toFn))
+            logging.info('Copy %s %s' % (fromFn, toFn))
             shutil.copyfile(fromFn, toFn)

@@ -3,7 +3,7 @@
 #       SampleImages.py - Sample Images Python Application.
 #
 # FUNCTIONAL DESCRIPTION.
-#       The app samples images from dataset by a given rate.
+#       The app samples or partitions images from a directory by a given rate.
 #
 # NOTICE.
 #       Author: visualge@gmail.com (CountChu)
@@ -33,8 +33,31 @@ import Util
 
 def buildArgParser():
 
+    desc = '''
+The app samples or partitions images from a directory by a given rate.
+
+Usage 1: python SampleImages.py Test -r 2
+
+    It samples images from the directory Test in the rate 2%.
+    It outputs Test#s-r2
+
+Usage 2: python SampleImages.py Test -r 2 -p
+
+    It partitions images from the directory Test in the rate 2%.
+    It outputs:
+        Test#s-r2-p00
+        Test#s-r2-p01
+        ... ...
+
+Usage 3: python SampleImages.py Test -r 2 -p -c
+
+    It checks the Usage 2. It doesn't output.
+
+'''
+
     parser = argparse.ArgumentParser(
-                description='Build ...')
+                formatter_class=argparse.RawTextHelpFormatter,
+                description=desc)
 
     #
     # Standard arguments
@@ -85,7 +108,7 @@ def buildArgParser():
             "-c",
             dest="check",
             action='store_true',
-            help="Check means don't apply the changes.")
+            help="Check means no output.")
 
     return parser
 
@@ -192,7 +215,7 @@ def main():
     #
 
     if args.outputDir is None:
-        args.outputDir = '%s#sample-r%d' % (args.dir, args.rate)
+        args.outputDir = '%s#s-r%d' % (args.dir, args.rate)
         print('Specify outputDir = %s' % args.outputDir)
 
     #
@@ -221,7 +244,7 @@ def main():
 
     all = []
     for i in range(count):
-        print('partList[%d][:10] = %s' % (i, partList[i][:10]))
+        print('partition_%d[:10] = %s' % (i, partList[i][:10]))
         idPartList = Util.samplingKeys(idList, partList[i])
         for id in idPartList:
             if id in all:
@@ -229,7 +252,11 @@ def main():
                 sys.exit(0)
         all.extend(idPartList)
         logging.info('len(all) = %d' % len(all))
-        Util.copyFiles(idPartList, baseNameDict, args.dir, args.outputDir, i, args.check)
+        if count == 1:
+            outputDir = '%s' % (args.outputDir)
+        else:
+            outputDir = '%s-p%02d' % (args.outputDir, i)
+        Util.copyFiles(idPartList, baseNameDict, args.dir, outputDir, args.check)
     #pdb.set_trace()
 
     #sampling(args.dir, baseNameDict, args.outputDir, args.rate)
